@@ -1,6 +1,5 @@
 {
-  "installCommand": "",
-  "buildCommand": "echo 'Pre-built — serving dist/ directly'",
+  "buildCommand": "ls dist",
   "outputDirectory": "dist",
   "framework": null,
   "cleanUrls": true,
