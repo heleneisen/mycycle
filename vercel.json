@@ -2,6 +2,8 @@
   "buildCommand": "ls dist",
   "outputDirectory": "dist",
   "framework": null,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/$1.html" }
+  ]
 }
