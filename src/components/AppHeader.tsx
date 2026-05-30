@@ -10,6 +10,8 @@ export function AppHeader() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
+        {/* Left placeholder balances the right slot so the center stays truly centred */}
+        <View style={styles.sideSlot} />
         <View style={styles.centerGroup} pointerEvents="none">
           <View style={styles.logoWrap}>
             <MaterialCommunityIcons
@@ -27,7 +29,7 @@ export function AppHeader() {
           </View>
           <Text style={styles.title}>FemCycle</Text>
         </View>
-        <View style={styles.rightSlot} pointerEvents="box-none">
+        <View style={styles.sideSlot} pointerEvents="box-none">
           {saved && (
             <Text style={styles.savedIndicator} numberOfLines={1}>
               ✓ Saved
@@ -47,21 +49,17 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     width: '100%',
     minHeight: 40,
   },
-  headerSpacer: {
-    height: 16,
-    width: '100%',
+  /* Equal-flex side slots push the center group into the exact middle */
+  sideSlot: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   centerGroup: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 10,
   },
   logoWrap: {
@@ -82,9 +80,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: FreshFeminine.charcoal,
   },
-  rightSlot: {
-    minWidth: 52,
-    alignItems: 'flex-end',
+  headerSpacer: {
+    height: 16,
+    width: '100%',
   },
   savedIndicator: {
     fontSize: 12,

@@ -45,7 +45,7 @@ export default function RootLayout() {
         <meta name="apple-mobile-web-app-title" content="FemCycle" />
         {Platform.OS === 'web' && (
           <style>{`
-            html, body { background-color: #DDD8D0; height: 100%; margin: 0; }
+            html, body { background-color: #DDD8D0; height: 100%; margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
             #root { height: 100%; display: flex; justify-content: center; }
           `}</style>
         )}

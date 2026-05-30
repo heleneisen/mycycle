@@ -16,6 +16,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: FreshFeminine.charcoalLight,
         headerShown: true,
         headerTitle: () => <AppHeader />,
+        headerTitleAlign: 'center',
         headerStyle: {
           backgroundColor: FreshFeminine.warmWhite,
           borderBottomWidth: 1,

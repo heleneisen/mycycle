@@ -7,6 +7,7 @@ import {
   Pressable,
   ActivityIndicator,
   PanResponder,
+  Platform,
 } from 'react-native';
 import { useAppDimensions } from '@/src/hooks/useAppDimensions';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
@@ -1618,11 +1619,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: FreshFeminine.charcoal,
+    ...(Platform.OS === 'web' && { fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif' } as any),
   },
   chartTopBarSubTitle: {
     fontSize: 11,
     color: FreshFeminine.charcoalLight,
     marginTop: 2,
+    ...(Platform.OS === 'web' && { fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif' } as any),
   },
   chartWrapper: {
     flex: 1,
