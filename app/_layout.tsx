@@ -4,6 +4,9 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import 'react-native-reanimated';
 
 import { FreshFeminine } from '@/src/constants/theme';
@@ -27,6 +30,11 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    ...MaterialCommunityIcons.font,
+    ...MaterialIcons.font,
+  });
+
   useEffect(() => {
     initDb();
     if (Platform.OS === 'web' && typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
@@ -34,12 +42,14 @@ export default function RootLayout() {
     }
   }, []);
 
+  if (!fontsLoaded) return null;
+
   return (
     <ThemeProvider value={FreshFeminineTheme}>
       <Head>
         <meta name="theme-color" content="#72D2D1" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/assets/images/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="FemCycle" />

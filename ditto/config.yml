@@ -1,0 +1,8 @@
+projects: []
+variants: []
+statuses: []
+components:
+  folders: []
+outputs:
+  - format: json
+    framework: i18next

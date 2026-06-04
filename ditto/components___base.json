@@ -1,0 +1,21 @@
+{
+  "app-title": "FemCycle",
+  "calendar-empty-state": "Nothing logged yet. Go to My data to start.",
+  "chart-cycle-start-subtitle": "[Month Day Year]",
+  "chart-error-body": "Check your connection and try again.",
+  "chart-error-title": "Your chart couldn't load",
+  "chart-loading": "Loading...",
+  "chart-weekday-header": "Weekday",
+  "feeling-category-mood": "Mood & skin",
+  "feeling-category-vitality": "Vitality & digestion",
+  "log-feeling-add-button": "Add a feeling...",
+  "log-info-feeling": "Track how you feel today – cramps, mood, fatigue, or add your own symptoms.",
+  "log-info-flow": "Track your menstrual bleeding: spotting, light, medium, or heavy. Mark Day 1 when your full flow starts.",
+  "log-info-fluids": "Choose the option that best matches your cervical fluid today – from sticky or creamy to egg-white or watery.",
+  "log-info-flux": "Log your temperature here. Take your temp at the same time every morning, before getting up. Mark Temp shift when you notice a sustained rise – this signals that ovulation has passed.",
+  "log-info-free-form": "Notes for the day – anything you want to remember.",
+  "log-info-fysical": "Optional note on sex: protected, unprotected, or withdrawal – for your own reference.",
+  "log-invalid-temp-body-celsius": "Enter a temperature between 35–46°C",
+  "log-invalid-temp-body-fahrenheit": "Enter a temperature between 95–115°F",
+  "log-invalid-temp-title": "This temp isn't in range"
+}

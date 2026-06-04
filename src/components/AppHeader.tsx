@@ -10,7 +10,6 @@ export function AppHeader() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
-        {/* Left placeholder balances the right slot so the center stays truly centred */}
         <View style={styles.sideSlot} />
         <View style={styles.centerGroup} pointerEvents="none">
           <View style={styles.logoWrap}>
@@ -37,7 +36,6 @@ export function AppHeader() {
           )}
         </View>
       </View>
-      <View style={styles.headerSpacer} />
     </View>
   );
 }
@@ -45,14 +43,13 @@ export function AppHeader() {
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
+    paddingVertical: 12,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    minHeight: 40,
   },
-  /* Equal-flex side slots push the center group into the exact middle */
   sideSlot: {
     flex: 1,
     alignItems: 'flex-end',
@@ -79,10 +76,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: FreshFeminine.charcoal,
-  },
-  headerSpacer: {
-    height: 16,
-    width: '100%',
   },
   savedIndicator: {
     fontSize: 12,

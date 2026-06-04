@@ -23,13 +23,14 @@ export default function TabLayout() {
           borderBottomColor: FreshFeminine.sage,
           elevation: 0,
           shadowOpacity: 0,
-          paddingBottom: 14,
         },
         headerShadowVisible: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           backgroundColor: FreshFeminine.warmWhite,
           borderTopColor: FreshFeminine.sage,
+          paddingBottom: 8,
+          height: 58,
         },
         tabBarLabelStyle: { fontWeight: '500' },
       }}

@@ -112,18 +112,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconRing: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   iconRingSelected: {
-    backgroundColor: 'rgba(114, 210, 209, 0.25)', // Slightly larger/more visible selection indicator
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    backgroundColor: 'rgba(114, 210, 209, 0.25)',
   },
   icon: {},
   optionText: {

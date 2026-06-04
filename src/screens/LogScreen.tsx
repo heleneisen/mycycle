@@ -8,7 +8,6 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Modal,
 } from 'react-native';
 import { useAppDimensions } from '@/src/hooks/useAppDimensions';
@@ -30,12 +29,13 @@ import { CheckboxRow } from '@/src/components/CheckboxRow';
 import { SegmentedRow } from '@/src/components/SegmentedRow';
 import { FluidRow } from '@/src/components/FluidRow';
 import { FlowRow } from '@/src/components/FlowRow';
+import { FormRow, type FormType } from '@/src/components/FormRow';
 import { SexRow } from '@/src/components/SexRow';
 import { SymptomIntensityRow, type Intensity } from '@/src/components/SymptomIntensityRow';
 import { FeelingModal } from '@/src/components/FeelingModal';
 import { FreshFeminine, SPACING } from '@/src/constants/theme';
 import { useSavedIndicator } from '@/src/contexts/SavedIndicatorContext';
-import { getLogByDate, getAllLogs, saveDailyLog, type DailyLog } from '@/src/storage/db';
+import { getLogByDate, getAllLogs, saveDailyLog, type DailyLog, getCustomSymptoms, persistCustomSymptom } from '@/src/storage/db';
 import { AsyncStorage } from 'expo-sqlite/kv-store';
 
 const FLUID_OPTIONS = ['None', 'Sticky', 'Creamy', 'Egg white', 'Watery'] as const;
@@ -57,7 +57,12 @@ const SECTION_EXPLANATIONS: Record<string, { title: string; message: string }> =
   fluids: {
     title: 'Fluids',
     message:
-      'Choose the option that best matches your cervical fluid today – from sticky or creamy to egg-white or watery.',
+      'Choose the option that best matches your cervical mucus (fluid) today – sticky, creamy, egg-white, or watery.',
+  },
+  form: {
+    title: 'Form',
+    message:
+      'Track your cervical position here. It\'s Closed before ovulation, moves to Midway as you approach it, and Opens around ovulation. After ovulation it returns to Closed.',
   },
   flow: {
     title: 'Flow',
@@ -65,7 +70,7 @@ const SECTION_EXPLANATIONS: Record<string, { title: string; message: string }> =
       'Track your menstrual bleeding: spotting, light, medium, or heavy. Mark Day 1 when your full flow starts.',
   },
   fysical: {
-    title: 'Fysical™',
+    title: 'Fysical',
     message:
       'Optional note on sex: protected, unprotected, or withdrawal – for your own reference.',
   },
@@ -75,18 +80,19 @@ const SECTION_EXPLANATIONS: Record<string, { title: string; message: string }> =
       'Track how you feel today – cramps, mood, fatigue, or add your own symptoms.',
   },
   freeform: {
-    title: 'Free-form',
+    title: 'Footnote',
     message:
       'Notes for the day – anything you want to remember.',
   },
 };
 
-/** Set to true to show icons next to section titles (Flux, Fluids, Flow, Fysical™, Feeling, Free-form). */
+/** Set to true to show icons next to section titles (Flux, Fluids, Form, Flow, Fysical, Feeling, Footnote). */
 const SHOW_SECTION_ICONS = false;
 
 const SECTION_ICON: Record<keyof typeof SECTION_EXPLANATIONS, { mci?: keyof typeof MaterialCommunityIcons.glyphMap; color: string; custom?: 'interlocking-circles' }> = {
   flux: { mci: 'thermometer', color: FreshFeminine.aqua },
   fluids: { mci: 'water', color: FreshFeminine.aqua },
+  form: { mci: 'triangle-outline', color: FreshFeminine.aqua },
   flow: { mci: 'chart-bar', color: FreshFeminine.darkMagenta },
   fysical: { custom: 'interlocking-circles', color: FreshFeminine.aqua },
   feeling: { mci: 'stethoscope', color: FreshFeminine.aqua },
@@ -114,9 +120,11 @@ function InterlockingCirclesIcon({ size = 22, color }: { size?: number; color: s
 function SectionHeader({
   label,
   sectionKey,
+  subtitle,
 }: {
   label: React.ReactNode;
   sectionKey: keyof typeof SECTION_EXPLANATIONS;
+  subtitle?: string;
 }) {
   const [showInfo, setShowInfo] = useState(false);
   const { title, message } = SECTION_EXPLANATIONS[sectionKey];
@@ -132,7 +140,9 @@ function SectionHeader({
           ) : iconConfig.mci ? (
             <MaterialCommunityIcons name={iconConfig.mci} size={20} color={iconConfig.color} style={styles.sectionIcon} />
           ) : null)}
-          <Text style={styles.sectionLabel}>{label}</Text>
+          <Text style={styles.sectionLabel}>
+            {label}{subtitle ? <Text style={styles.sectionSubtitle}>{'  '}{subtitle}</Text> : null}
+          </Text>
         </View>
         <Pressable
           onPress={() => setShowInfo(true)}
@@ -342,14 +352,34 @@ export default function LogScreen() {
     }
     // If above max, don't allow
   };
+
+  const [tempErrorMessage, setTempErrorMessage] = useState<string | null>(null);
+
+  const handleTempBlur = useCallback(() => {
+    if (!temp || temp === '.') return;
+    const parsed = parseFloat(temp);
+    if (isNaN(parsed)) return;
+    const minTemp = tempUnit === 'C' ? MIN_TEMP_C : MIN_TEMP_F;
+    const maxTemp = tempUnit === 'C' ? MAX_TEMP_C : MAX_TEMP_F;
+    if (parsed < minTemp || parsed > maxTemp) {
+      setTempErrorMessage(
+        tempUnit === 'C'
+          ? 'Enter a temperature between 35–46°C'
+          : 'Enter a temperature between 95–115°F'
+      );
+    }
+  }, [temp, tempUnit]);
+
   const [cycleDay, setCycleDay] = useState<number | null>(null);
   const [cycleNumber, setCycleNumber] = useState<number | null>(null);
   const [fluid, setFluid] = useState<FluidType | null>(null);
+  const [form, setForm] = useState<FormType | null>(null);
   const [flow, setFlow] = useState<FlowType | null>(null);
   const [sex, setSex] = useState<SexType | null>(null);
   const [notes, setNotes] = useState('');
   const [symptoms, setSymptoms] = useState<SymptomLevels>({});
   const [customSymptom, setCustomSymptom] = useState('');
+  const [savedCustomSymptoms, setSavedCustomSymptoms] = useState<string[]>([]);
   const [showFeelingModal, setShowFeelingModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -366,6 +396,7 @@ export default function LogScreen() {
     tempQuestionable: false,
     tempShift: false,
     fluid: null as FluidType | null,
+    form: null as FormType | null,
     flow: null as FlowType | null,
     sex: null as SexType | null,
     isCycleDayOne: false,
@@ -378,6 +409,17 @@ export default function LogScreen() {
     setSymptoms((prev) => ({ ...prev, [name]: value }));
   };
   const getSymptom = (name: string): Intensity => (symptoms[name] ?? 0) as Intensity;
+
+  const handleAddCustomSymptom = useCallback(async (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    await persistCustomSymptom(trimmed);
+    setSavedCustomSymptoms((prev) =>
+      prev.some((s) => s.toLowerCase() === trimmed.toLowerCase()) ? prev : [...prev, trimmed]
+    );
+    setSymptoms((prev) => ({ ...prev, [trimmed]: prev[trimmed] ?? 1 }));
+    setCustomSymptom('');
+  }, []);
 
   const applyLogData = useCallback((log: DailyLog | null) => {
     if (log) {
@@ -398,6 +440,7 @@ export default function LogScreen() {
         (log.fluid === 'Spotting' ? 'Spotting' : log.flow) as FlowType | null
       );
       setSex(log.sex as SexType | null);
+      setForm(log.form as FormType | null);
       setNotes(log.notes ?? '');
       setSymptoms(log.symptoms ?? {});
       setCustomSymptom('');
@@ -409,6 +452,7 @@ export default function LogScreen() {
       setTempQuestionable(false);
       setTempShift(false);
       setFluid(null);
+      setForm(null);
       setFlow(null);
       setSex(null);
       setNotes('');
@@ -449,6 +493,11 @@ export default function LogScreen() {
     }
   }, [params.date]);
 
+  // Load persisted custom symptom names once on mount
+  useEffect(() => {
+    getCustomSymptoms().then(setSavedCustomSymptoms);
+  }, []);
+
   // Save selectedDate to AsyncStorage whenever it changes (for syncing with chart tab)
   useEffect(() => {
     AsyncStorage.setItem('lastViewedDate', selectedDate).catch(() => {
@@ -470,6 +519,7 @@ export default function LogScreen() {
     tempQuestionable,
     tempShift,
     fluid,
+    form,
     flow,
     sex,
     isCycleDayOne,
@@ -492,14 +542,6 @@ export default function LogScreen() {
         
         if (rounded >= minTemp && rounded <= maxTemp) {
           tempNum = rounded;
-        } else {
-          // Temperature out of range - set to null and show warning
-          Alert.alert(
-            "This temp isn't in range",
-            state.tempUnit === 'C'
-              ? 'Enter a temperature between 35–46°C'
-              : 'Enter a temperature between 95–115°F'
-          );
         }
       }
       
@@ -514,6 +556,7 @@ export default function LogScreen() {
         tempQuestionable: state.tempQuestionable,
         tempShift: state.tempShift,
         fluid: state.fluid,
+        form: state.form,
         flow: state.flow,
         sex: state.sex,
         isCycleDayOne: state.isCycleDayOne,
@@ -547,6 +590,7 @@ export default function LogScreen() {
     tempQuestionable,
     tempShift,
     fluid,
+    form,
     flow,
     sex,
     isCycleDayOne,
@@ -744,12 +788,13 @@ export default function LogScreen() {
         </View>
 
         <Card style={styles.card}>
-          <SectionHeader label="Flux" sectionKey="flux" />
+          <SectionHeader label="Flux" sectionKey="flux" subtitle="Temp" />
           <View style={styles.tempRow}>
             <TextInput
               style={styles.tempInput}
               value={temp}
               onChangeText={handleTempChange}
+              onBlur={handleTempBlur}
               placeholder="0.00"
               placeholderTextColor={FreshFeminine.sage}
               keyboardType="decimal-pad"
@@ -758,44 +803,32 @@ export default function LogScreen() {
               <Pressable
                 onPress={() => {
                   setTempUnit('C');
-                  // Validate temp when switching units
                   if (temp) {
                     const numValue = parseFloat(temp);
                     if (!isNaN(numValue)) {
-                      // Convert F to C for validation
                       const tempC = tempUnit === 'F' ? (numValue - 32) * (5 / 9) : numValue;
-                      if (tempC < MIN_TEMP_C || tempC > MAX_TEMP_C) {
-                        setTemp(''); // Clear if out of range
-                      }
+                      if (tempC < MIN_TEMP_C || tempC > MAX_TEMP_C) setTemp('');
                     }
                   }
                 }}
                 style={[styles.unitBtn, tempUnit === 'C' && styles.unitBtnSelected]}
               >
-                <Text style={[styles.unitText, tempUnit === 'C' && styles.unitTextSelected]}>
-                  °C
-                </Text>
+                <Text style={[styles.unitText, tempUnit === 'C' && styles.unitTextSelected]}>°C</Text>
               </Pressable>
               <Pressable
                 onPress={() => {
                   setTempUnit('F');
-                  // Validate temp when switching units
                   if (temp) {
                     const numValue = parseFloat(temp);
                     if (!isNaN(numValue)) {
-                      // Convert C to F for validation
                       const tempF = tempUnit === 'C' ? (numValue * 9 / 5) + 32 : numValue;
-                      if (tempF < MIN_TEMP_F || tempF > MAX_TEMP_F) {
-                        setTemp(''); // Clear if out of range
-                      }
+                      if (tempF < MIN_TEMP_F || tempF > MAX_TEMP_F) setTemp('');
                     }
                   }
                 }}
                 style={[styles.unitBtn, tempUnit === 'F' && styles.unitBtnSelected]}
               >
-                <Text style={[styles.unitText, tempUnit === 'F' && styles.unitTextSelected]}>
-                  °F
-                </Text>
+                <Text style={[styles.unitText, tempUnit === 'F' && styles.unitTextSelected]}>°F</Text>
               </Pressable>
             </View>
           </View>
@@ -824,7 +857,7 @@ export default function LogScreen() {
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Fluids" sectionKey="fluids" />
+          <SectionHeader label="Fluids" sectionKey="fluids" subtitle="Mucus" />
           <FluidRow value={fluid} onSelect={setFluid} />
           <View style={[styles.toggleBlock, { backgroundColor: 'rgba(114, 210, 209, 0.07)' }]}>
             <CheckboxRow
@@ -838,7 +871,12 @@ export default function LogScreen() {
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Flow" sectionKey="flow" />
+          <SectionHeader label="Form" sectionKey="form" subtitle="Cervix" />
+          <FormRow value={form} onSelect={setForm} />
+        </Card>
+
+        <Card style={styles.card}>
+          <SectionHeader label="Flow" sectionKey="flow" subtitle="Period" />
           <FlowRow value={flow} onSelect={setFlow} />
           <View style={[styles.toggleBlock, { backgroundColor: 'rgba(139, 0, 139, 0.07)' }]}>
             <CheckboxRow
@@ -854,16 +892,15 @@ export default function LogScreen() {
 
         <Card style={styles.card}>
           <SectionHeader
-            label={
-              <Text style={styles.sectionLabel}>Fysical<Text style={styles.tmSuperscript}>™</Text></Text>
-            }
+            label="Fysical"
             sectionKey="fysical"
+            subtitle="Sex"
           />
           <SexRow value={sex} onSelect={setSex} />
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Feeling" sectionKey="feeling" />
+          <SectionHeader label="Feeling" sectionKey="feeling" subtitle="Symptoms" />
           {(() => {
             const selected: { name: string; value: Intensity }[] = [];
             Object.entries(symptoms).forEach(([name, value]) => {
@@ -903,10 +940,29 @@ export default function LogScreen() {
           getSymptom={getSymptom}
           customSymptom={customSymptom}
           setCustomSymptom={setCustomSymptom}
+          savedCustomSymptoms={savedCustomSymptoms}
+          onAddCustomSymptom={handleAddCustomSymptom}
         />
 
+        <Modal
+          visible={tempErrorMessage !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setTempErrorMessage(null)}
+        >
+          <Pressable style={styles.infoBackdrop} onPress={() => setTempErrorMessage(null)}>
+            <Pressable style={styles.infoCard} onPress={() => {}}>
+              <Text style={styles.infoTitle}>This temp isn't in range</Text>
+              <Text style={styles.infoMessage}>{tempErrorMessage}</Text>
+              <Pressable style={styles.infoCloseBtn} onPress={() => setTempErrorMessage(null)}>
+                <Text style={styles.infoCloseBtnText}>Got it</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
+
         <Card style={[styles.card, styles.cardLast]}>
-          <SectionHeader label="Free-form" sectionKey="freeform" />
+          <SectionHeader label="Footnote" sectionKey="freeform" subtitle="Journal" />
           <TextInput
             style={styles.notesInput}
             value={notes}
@@ -1024,6 +1080,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: FreshFeminine.charcoal,
   },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: FreshFeminine.iconMuted,
+    fontWeight: '400',
+  },
   tmSuperscript: {
     fontSize: 12,
     marginTop: -3,
@@ -1034,7 +1095,7 @@ const styles = StyleSheet.create({
     padding: 14,
     margin: -10,
   },
-  tempRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  tempRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tempInput: {
     flex: 1,
     borderWidth: 1,

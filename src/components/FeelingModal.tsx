@@ -52,6 +52,8 @@ type FeelingModalProps = {
   getSymptom: (name: string) => Intensity;
   customSymptom: string;
   setCustomSymptom: (value: string) => void;
+  savedCustomSymptoms: string[];
+  onAddCustomSymptom: (name: string) => void;
 };
 
 export function FeelingModal({
@@ -62,7 +64,15 @@ export function FeelingModal({
   getSymptom,
   customSymptom,
   setCustomSymptom,
+  savedCustomSymptoms,
+  onAddCustomSymptom,
 }: FeelingModalProps) {
+  const handleAdd = () => {
+    const trimmed = customSymptom.trim();
+    if (!trimmed) return;
+    onAddCustomSymptom(trimmed);
+  };
+
   return (
     <Modal
       visible={visible}
@@ -114,13 +124,32 @@ export function FeelingModal({
             />
           ))}
           <Text style={styles.hint}>Custom</Text>
-          <TextInput
-            style={styles.customInput}
-            value={customSymptom}
-            onChangeText={setCustomSymptom}
-            placeholder="Add your own…"
-            placeholderTextColor={FreshFeminine.sage}
-          />
+          {savedCustomSymptoms.map((name) => (
+            <SymptomIntensityRow
+              key={name}
+              label={name}
+              value={getSymptom(name)}
+              onValueChange={(v) => setSymptom(name, v)}
+            />
+          ))}
+          <View style={styles.addRow}>
+            <TextInput
+              style={styles.customInput}
+              value={customSymptom}
+              onChangeText={setCustomSymptom}
+              onSubmitEditing={handleAdd}
+              placeholder="Add your own…"
+              placeholderTextColor={FreshFeminine.sage}
+              returnKeyType="done"
+            />
+            <Pressable
+              style={[styles.addBtn, !customSymptom.trim() && styles.addBtnDisabled]}
+              onPress={handleAdd}
+              disabled={!customSymptom.trim()}
+            >
+              <Text style={styles.addBtnText}>Add</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
@@ -167,7 +196,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
   customInput: {
+    flex: 1,
     borderWidth: 1,
     borderColor: FreshFeminine.sage,
     borderRadius: 8,
@@ -175,6 +211,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     color: FreshFeminine.charcoal,
-    marginTop: 4,
+  },
+  addBtn: {
+    backgroundColor: FreshFeminine.sage,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  addBtnDisabled: {
+    opacity: 0.4,
+  },
+  addBtnText: {
+    color: FreshFeminine.warmWhite,
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

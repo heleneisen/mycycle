@@ -53,7 +53,7 @@ const MAX_RENDER_DAYS = 5000;
 const FLUID_TYPES = ['Watery', 'Egg white', 'Creamy', 'Sticky'] as const;
 
 // Calculate label width based on longest title
-const LABEL_TITLES = [...FLUID_TYPES, 'Flow', 'Fysical™', 'Free-form'];
+const LABEL_TITLES = [...FLUID_TYPES, 'Flow', 'Fysical', 'Footnote'];
 const LONGEST_LABEL = Math.max(...LABEL_TITLES.map(t => t.length));
 // Approximate width: ~7px per character + padding + half a column width for more room
 const LEFT_LABEL_WIDTH = Math.max(60, LONGEST_LABEL * 7 + 16) + COLUMN_WIDTH * 0.5;
@@ -1056,10 +1056,10 @@ export function ChartScreen() {
                 <Text style={[styles.leftLabelText, { color: FreshFeminine.charcoal }]} numberOfLines={1} ellipsizeMode="tail">Flow</Text>
               </View>
               <View style={[styles.labelRow, { top: fluxYStart + fluidRowsHeight + flowRowHeight, height: ACTIVITY_ROW_HEIGHT, backgroundColor: '#FFFFFF' }]}>
-                <Text style={[styles.leftLabelText, { color: FreshFeminine.charcoal }]} numberOfLines={1} ellipsizeMode="tail">Fysical<Text style={[styles.leftLabelText, styles.tmSuperscript]}>™</Text></Text>
+                <Text style={[styles.leftLabelText, { color: FreshFeminine.charcoal }]} numberOfLines={1} ellipsizeMode="tail">Fysical</Text>
               </View>
               <View style={[styles.labelRow, { top: fluxYStart + fluidRowsHeight + flowRowHeight + ACTIVITY_ROW_HEIGHT, height: ACTIVITY_ROW_HEIGHT, backgroundColor: '#FFFFFF' }]}>
-                <Text style={[styles.leftLabelText, { color: FreshFeminine.charcoal }]} numberOfLines={1} ellipsizeMode="tail">Free-form</Text>
+                <Text style={[styles.leftLabelText, { color: FreshFeminine.charcoal }]} numberOfLines={1} ellipsizeMode="tail">Footnote</Text>
               </View>
               {allSymptoms.map((symptom, idx) => {
                 const symptomY = fluxYStart + fluidRowsHeight + flowRowHeight + (ACTIVITY_ROW_HEIGHT * 2) + (idx * ACTIVITY_ROW_HEIGHT);
@@ -1245,7 +1245,7 @@ export function ChartScreen() {
                   stroke={FreshFeminine.gridFaint}
                   strokeWidth={GRID_LINE_WIDTH}
                 />
-                {/* Free-form row bottom */}
+                {/* Footnote row bottom */}
                 <Line
                   x1={LEFT_LABEL_WIDTH}
                   y1={fluxYStart + fluidRowsHeight + flowRowHeight + ACTIVITY_ROW_HEIGHT + ACTIVITY_ROW_HEIGHT}
@@ -1485,7 +1485,7 @@ export function ChartScreen() {
                   }
                 })}
 
-                {/* Activity row 2: Free-form - ensure circle is fully visible */}
+                {/* Activity row 2: Footnote - ensure circle is fully visible */}
                 {cycleData.map((d) => {
                   if (!d.notes || !d.notes.trim()) return null;
                   const x = LEFT_LABEL_WIDTH + (d.cycleDay - 1) * COLUMN_WIDTH + COLUMN_WIDTH / 2;
@@ -1494,7 +1494,7 @@ export function ChartScreen() {
                   // Use same size as symptom circles (medium size: radius 5)
                   return (
                     <Circle
-                      key={`freeform-${d.cycleDay}`}
+                      key={`footnote-${d.cycleDay}`}
                       cx={x}
                       cy={activityY}
                       r={5}
