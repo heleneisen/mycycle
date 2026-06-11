@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Svg, { Path } from 'react-native-svg';
 import { FreshFeminine } from '@/src/constants/theme';
 
 type ImageAttachment = {
@@ -614,6 +615,30 @@ function TypingIndicator() {
   );
 }
 
+const DROPLET_PATH = 'M 6 0 C 2.5 5 0 8 0 11 A 6 6 0 0 0 12 11 C 12 8 9.5 5 6 0 Z';
+
+function DropletIllustration() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14 }}>
+      <View style={{ zIndex: 1 }}>
+        <Svg width={18} height={24} viewBox="0 0 12 16">
+          <Path d={DROPLET_PATH} fill={FreshFeminine.aqua} />
+        </Svg>
+      </View>
+      <View style={{ marginLeft: -8, zIndex: 2 }}>
+        <Svg width={18} height={24} viewBox="0 0 12 16">
+          <Path d={DROPLET_PATH} fill={FreshFeminine.flowLight} />
+        </Svg>
+      </View>
+      <View style={{ marginLeft: -8, zIndex: 3 }}>
+        <Svg width={18} height={24} viewBox="0 0 12 16">
+          <Path d={DROPLET_PATH} fill={FreshFeminine.aqua} />
+        </Svg>
+      </View>
+    </View>
+  );
+}
+
 export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -814,9 +839,17 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
             <ScrollView
               ref={scrollRef}
               style={styles.messageList}
-              contentContainerStyle={styles.messageListContent}
+              contentContainerStyle={[styles.messageListContent, messages.length === 0 && !loading && styles.messageListEmpty]}
               keyboardShouldPersistTaps="handled"
             >
+              {messages.length === 0 && !loading && (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>
+                    Ask anything about your cycle or upload your chart for interpretation. This conversation will be deleted when you close this chat.
+                  </Text>
+                  <DropletIllustration />
+                </View>
+              )}
               {messages.map((msg) => (
                 <View
                   key={msg.id}
@@ -888,7 +921,7 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
                 </Pressable>
                 {pendingImage && (
                   <>
-                    <Text style={styles.pendingLabel}>· Chart ready</Text>
+                    <Text style={styles.pendingLabel}>· File ready</Text>
                     <Pressable onPress={() => setPendingImage(null)} hitSlop={8}>
                       <MaterialIcons name="close" size={14} color={FreshFeminine.charcoalLight} />
                     </Pressable>
@@ -945,6 +978,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     gap: 10,
+  },
+  messageListEmpty: {
+    flexGrow: 1,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateText: {
+    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 22,
+    color: FreshFeminine.charcoalLight,
   },
   bubbleRow: {
     maxWidth: '80%',
