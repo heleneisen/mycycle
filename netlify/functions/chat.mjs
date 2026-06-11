@@ -1,4 +1,11 @@
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const systemPrompt = readFileSync(join(__dirname, '../../femcycle-system-prompt-combined.txt'), 'utf8');
 
 export default async function handler(req) {
   if (!ANTHROPIC_API_KEY) {
@@ -20,7 +27,7 @@ export default async function handler(req) {
       body: JSON.stringify({
         model: body.model ?? 'claude-sonnet-4-6',
         max_tokens: body.max_tokens ?? 1024,
-        system: body.system,
+        system: systemPrompt,
         messages: body.messages,
       }),
     });

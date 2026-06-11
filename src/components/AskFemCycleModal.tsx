@@ -672,7 +672,7 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
         res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ model: MODEL, max_tokens: 1024, system: SYSTEM_PROMPT, messages: apiMessages }),
+          body: JSON.stringify({ model: MODEL, max_tokens: 1024, system: undefined, messages: apiMessages }),
         });
       } else {
         res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -683,7 +683,7 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
             'content-type': 'application/json',
             'anthropic-dangerous-direct-browser-access': 'true',
           },
-          body: JSON.stringify({ model: MODEL, max_tokens: 1024, system: SYSTEM_PROMPT, messages: apiMessages }),
+          body: JSON.stringify({ model: MODEL, max_tokens: 1024, system: undefined, messages: apiMessages }),
         });
       }
 
