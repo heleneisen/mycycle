@@ -29,7 +29,6 @@ import { CheckboxRow } from '@/src/components/CheckboxRow';
 import { SegmentedRow } from '@/src/components/SegmentedRow';
 import { FluidRow } from '@/src/components/FluidRow';
 import { FlowRow } from '@/src/components/FlowRow';
-import { FormRow, type FormType } from '@/src/components/FormRow';
 import { SexRow } from '@/src/components/SexRow';
 import { SymptomIntensityRow, type Intensity } from '@/src/components/SymptomIntensityRow';
 import { FeelingModal } from '@/src/components/FeelingModal';
@@ -59,11 +58,6 @@ const SECTION_EXPLANATIONS: Record<string, { title: string; message: string }> =
     message:
       'Choose the option that best matches your cervical mucus (fluid) today – sticky, creamy, egg-white, or watery.',
   },
-  form: {
-    title: 'Form',
-    message:
-      'Track your cervical position here. It\'s Closed before ovulation, moves to Midway as you approach it, and Opens around ovulation. After ovulation it returns to Closed.',
-  },
   flow: {
     title: 'Flow',
     message:
@@ -92,7 +86,6 @@ const SHOW_SECTION_ICONS = false;
 const SECTION_ICON: Record<keyof typeof SECTION_EXPLANATIONS, { mci?: keyof typeof MaterialCommunityIcons.glyphMap; color: string; custom?: 'interlocking-circles' }> = {
   flux: { mci: 'thermometer', color: FreshFeminine.aqua },
   fluids: { mci: 'water', color: FreshFeminine.aqua },
-  form: { mci: 'triangle-outline', color: FreshFeminine.aqua },
   flow: { mci: 'chart-bar', color: FreshFeminine.darkMagenta },
   fysical: { custom: 'interlocking-circles', color: FreshFeminine.aqua },
   feeling: { mci: 'stethoscope', color: FreshFeminine.aqua },
@@ -373,7 +366,6 @@ export default function LogScreen() {
   const [cycleDay, setCycleDay] = useState<number | null>(null);
   const [cycleNumber, setCycleNumber] = useState<number | null>(null);
   const [fluid, setFluid] = useState<FluidType | null>(null);
-  const [form, setForm] = useState<FormType | null>(null);
   const [flow, setFlow] = useState<FlowType | null>(null);
   const [sex, setSex] = useState<SexType | null>(null);
   const [notes, setNotes] = useState('');
@@ -396,7 +388,6 @@ export default function LogScreen() {
     tempQuestionable: false,
     tempShift: false,
     fluid: null as FluidType | null,
-    form: null as FormType | null,
     flow: null as FlowType | null,
     sex: null as SexType | null,
     isCycleDayOne: false,
@@ -440,7 +431,6 @@ export default function LogScreen() {
         (log.fluid === 'Spotting' ? 'Spotting' : log.flow) as FlowType | null
       );
       setSex(log.sex as SexType | null);
-      setForm(log.form as FormType | null);
       setNotes(log.notes ?? '');
       setSymptoms(log.symptoms ?? {});
       setCustomSymptom('');
@@ -452,7 +442,6 @@ export default function LogScreen() {
       setTempQuestionable(false);
       setTempShift(false);
       setFluid(null);
-      setForm(null);
       setFlow(null);
       setSex(null);
       setNotes('');
@@ -519,7 +508,6 @@ export default function LogScreen() {
     tempQuestionable,
     tempShift,
     fluid,
-    form,
     flow,
     sex,
     isCycleDayOne,
@@ -556,7 +544,6 @@ export default function LogScreen() {
         tempQuestionable: state.tempQuestionable,
         tempShift: state.tempShift,
         fluid: state.fluid,
-        form: state.form,
         flow: state.flow,
         sex: state.sex,
         isCycleDayOne: state.isCycleDayOne,
@@ -590,7 +577,6 @@ export default function LogScreen() {
     tempQuestionable,
     tempShift,
     fluid,
-    form,
     flow,
     sex,
     isCycleDayOne,
@@ -761,9 +747,7 @@ export default function LogScreen() {
           <View style={styles.headerLeft}>
             <Text style={styles.dateText}>{formatDisplayDate(selectedDate)}</Text>
             <Text style={styles.cycleDayText}>
-              {cycleNumber != null && cycleDay != null 
-                ? `Cycle ${cycleNumber}, day ${cycleDay}` 
-                : 'Cycle —, day —'}
+              {`Cycle ${cycleNumber ?? 1}, Day ${cycleDay ?? 1}`}
             </Text>
           </View>
           <Pressable
@@ -788,7 +772,7 @@ export default function LogScreen() {
         </View>
 
         <Card style={styles.card}>
-          <SectionHeader label="Flux" sectionKey="flux" subtitle="Temp" />
+          <SectionHeader label="Flux" sectionKey="flux" />
           <View style={styles.tempRow}>
             <TextInput
               style={styles.tempInput}
@@ -857,7 +841,7 @@ export default function LogScreen() {
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Fluids" sectionKey="fluids" subtitle="Mucus" />
+          <SectionHeader label="Fluids" sectionKey="fluids" />
           <FluidRow value={fluid} onSelect={setFluid} />
           <View style={[styles.toggleBlock, { backgroundColor: 'rgba(114, 210, 209, 0.07)' }]}>
             <CheckboxRow
@@ -871,12 +855,7 @@ export default function LogScreen() {
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Form" sectionKey="form" subtitle="Cervix" />
-          <FormRow value={form} onSelect={setForm} />
-        </Card>
-
-        <Card style={styles.card}>
-          <SectionHeader label="Flow" sectionKey="flow" subtitle="Period" />
+          <SectionHeader label="Flow" sectionKey="flow" />
           <FlowRow value={flow} onSelect={setFlow} />
           <View style={[styles.toggleBlock, { backgroundColor: 'rgba(139, 0, 139, 0.07)' }]}>
             <CheckboxRow
@@ -891,16 +870,12 @@ export default function LogScreen() {
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader
-            label="Fysical"
-            sectionKey="fysical"
-            subtitle="Sex"
-          />
+          <SectionHeader label="Fysical™" sectionKey="fysical" />
           <SexRow value={sex} onSelect={setSex} />
         </Card>
 
         <Card style={styles.card}>
-          <SectionHeader label="Feeling" sectionKey="feeling" subtitle="Symptoms" />
+          <SectionHeader label="Feeling" sectionKey="feeling" />
           {(() => {
             const selected: { name: string; value: Intensity }[] = [];
             Object.entries(symptoms).forEach(([name, value]) => {
@@ -962,7 +937,7 @@ export default function LogScreen() {
         </Modal>
 
         <Card style={[styles.card, styles.cardLast]}>
-          <SectionHeader label="Footnote" sectionKey="freeform" subtitle="Journal" />
+          <SectionHeader label="Footnote" sectionKey="freeform" />
           <TextInput
             style={styles.notesInput}
             value={notes}

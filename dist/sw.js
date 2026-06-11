@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femcycle-v3';
+const CACHE_NAME = 'femcycle-v4';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

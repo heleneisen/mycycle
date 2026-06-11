@@ -938,7 +938,7 @@ export function ChartScreen() {
       <View style={styles.container}>
       <View style={styles.waterBackground} pointerEvents="none">
         <LinearGradient
-          colors={[FreshFeminine.warmWhite, FreshFeminine.sageMuted]}
+          colors={[FreshFeminine.warmWhite, FreshFeminine.warmWhite]}
           style={StyleSheet.absoluteFillObject}
         />
         <WatercolorStains />
@@ -1000,7 +1000,6 @@ export function ChartScreen() {
               {...panResponder.panHandlers}
             >
             <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]}>
-              <View style={{ position: 'absolute', right: 0, top: 0, width: 1, height: totalHeight, backgroundColor: FreshFeminine.gridFaint }} />
               <View style={[styles.leftLabels, { height: totalHeight }]}>
               <View style={[styles.labelRow, { top: 0, height: DATE_ROW_HEIGHT, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }]}>
                 {cycleStartDates.length > 1 && (
@@ -1285,6 +1284,7 @@ export function ChartScreen() {
                           fontSize={9}
                           fill={FreshFeminine.charcoal}
                           textAnchor="middle"
+                          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
                         >
                           {dateInfo.day}
                         </SvgText>
@@ -1295,6 +1295,7 @@ export function ChartScreen() {
                           fontSize={9}
                           fill={FreshFeminine.charcoalLight}
                           textAnchor="middle"
+                          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
                         >
                           {dateInfo.weekday}
                         </SvgText>
@@ -1306,6 +1307,7 @@ export function ChartScreen() {
                           fill={FreshFeminine.charcoal}
                           textAnchor="middle"
                           fontWeight="600"
+                          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
                         >
                           {d.cycleDay}
                         </SvgText>
@@ -1637,7 +1639,7 @@ const styles = StyleSheet.create({
   },
   verticalScroll: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     height: '100%',
   },
   scroll: {
