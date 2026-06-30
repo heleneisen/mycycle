@@ -494,13 +494,6 @@ export default function LogScreen() {
     });
   }, [selectedDate]);
 
-  useFocusEffect(
-    useCallback(() => {
-      // Skip loading state if we're currently swiping to prevent white flash
-      loadLogForDate(selectedDate, isSwiping);
-    }, [selectedDate, loadLogForDate, isSwiping])
-  );
-
   formStateRef.current = {
     temp,
     notes,
@@ -562,6 +555,21 @@ export default function LogScreen() {
       setCycleNumber(cycleNumberForDate(logs, selectedDate));
     });
   }, [selectedDate, triggerSaved]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Skip loading state if we're currently swiping to prevent white flash
+      loadLogForDate(selectedDate, isSwiping);
+      return () => {
+        // Flush any pending debounced save (temp/notes) before losing focus
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = null;
+          saveDailyLog(buildLog(formStateRef.current)).then(() => onSaved());
+        }
+      };
+    }, [selectedDate, loadLogForDate, isSwiping, buildLog, onSaved])
+  );
 
   useEffect(() => {
     if (!saveEnabledRef.current || loading) return;

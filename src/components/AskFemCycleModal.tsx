@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Defs, Mask, Rect } from 'react-native-svg';
 import { FreshFeminine } from '@/src/constants/theme';
 
 type ImageAttachment = {
@@ -615,26 +615,29 @@ function TypingIndicator() {
   );
 }
 
-const DROPLET_PATH = 'M 6 0 C 2.5 5 0 8 0 11 A 6 6 0 0 0 12 11 C 12 8 9.5 5 6 0 Z';
+// Three pre-shifted droplet paths (step=9 units apart, 12-unit wide shape → 3-unit overlap)
+const D0 = 'M 6 0 C 2.5 5 0 8 0 11 A 6 6 0 0 0 12 11 C 12 8 9.5 5 6 0 Z';
+const D1 = 'M 15 0 C 11.5 5 9 8 9 11 A 6 6 0 0 0 21 11 C 21 8 18.5 5 15 0 Z';
+const D2 = 'M 24 0 C 20.5 5 18 8 18 11 A 6 6 0 0 0 30 11 C 30 8 27.5 5 24 0 Z';
 
 function DropletIllustration() {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14 }}>
-      <View style={{ zIndex: 1 }}>
-        <Svg width={18} height={24} viewBox="0 0 12 16">
-          <Path d={DROPLET_PATH} fill={FreshFeminine.aqua} />
-        </Svg>
-      </View>
-      <View style={{ marginLeft: -8, zIndex: 2 }}>
-        <Svg width={18} height={24} viewBox="0 0 12 16">
-          <Path d={DROPLET_PATH} fill={FreshFeminine.flowLight} />
-        </Svg>
-      </View>
-      <View style={{ marginLeft: -8, zIndex: 3 }}>
-        <Svg width={18} height={24} viewBox="0 0 12 16">
-          <Path d={DROPLET_PATH} fill={FreshFeminine.aqua} />
-        </Svg>
-      </View>
+    <View style={{ marginVertical: 28 }}>
+      <Svg width={152} height={94} viewBox="-2 -2 34 21">
+        <Defs>
+          <Mask id="dm0">
+            <Rect x="-5" y="-5" width="50" height="30" fill="white" />
+            <Path d={D1} fill="black" stroke="black" strokeWidth="1.5" />
+          </Mask>
+          <Mask id="dm1">
+            <Rect x="-5" y="-5" width="50" height="30" fill="white" />
+            <Path d={D2} fill="black" stroke="black" strokeWidth="1.5" />
+          </Mask>
+        </Defs>
+        <Path d={D0} fill={FreshFeminine.flowLight} mask="url(#dm0)" />
+        <Path d={D1} fill={FreshFeminine.flowMedium} mask="url(#dm1)" />
+        <Path d={D2} fill={FreshFeminine.fluid5} />
+      </Svg>
     </View>
   );
 }
@@ -822,10 +825,6 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerText}>
-              <Text style={styles.headerTitle} numberOfLines={1}>Need help interpreting your data?</Text>
-              <Text style={styles.headerSubtitle} numberOfLines={1}>Responses are AI-generated. For medical concerns, see a doctor.</Text>
-            </View>
             <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
               <MaterialIcons name="close" size={18} color={FreshFeminine.charcoal} />
             </Pressable>
@@ -836,18 +835,33 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           >
             {/* Message list */}
-            <ScrollView
-              ref={scrollRef}
-              style={styles.messageList}
-              contentContainerStyle={[styles.messageListContent, messages.length === 0 && !loading && styles.messageListEmpty]}
-              keyboardShouldPersistTaps="handled"
-            >
+            <View style={styles.chatArea}>
+              <ScrollView
+                ref={scrollRef}
+                style={styles.messageList}
+                contentContainerStyle={[styles.messageListContent, messages.length === 0 && !loading && styles.messageListEmpty]}
+                keyboardShouldPersistTaps="handled"
+              >
               {messages.length === 0 && !loading && (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyStateText}>
-                    Ask anything about your cycle or upload your chart for interpretation. This conversation will be deleted when you close this chat.
-                  </Text>
-                  <DropletIllustration />
+                  <Text style={styles.emptyStateHeading}>Need help interpreting your data?</Text>
+                  <View style={styles.emptyCard}>
+                    <LinearGradient
+                      colors={['#FDEBD8', '#FAD6E6', '#C6EAE8']}
+                      locations={[0, 0.5, 1]}
+                      start={{ x: 0, y: 1 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFillObject}
+                    />
+                    <DropletIllustration />
+                    <Text style={styles.emptyStateText}>
+                      Ask anything about your cycle or upload your chart for interpretation.
+                    </Text>
+                    <Text style={[styles.emptyStateText, { marginTop: 14 }]}>
+                      This conversation will be deleted when you close this chat.
+                    </Text>
+                  </View>
+                  <Text style={styles.emptyStateSubtitle}>Responses are AI-generated. For medical concerns, see a doctor.</Text>
                 </View>
               )}
               {messages.map((msg) => (
@@ -883,7 +897,8 @@ export function AskFemCycleModal({ visible, onClose }: { visible: boolean; onClo
                   <TypingIndicator />
                 </View>
               )}
-            </ScrollView>
+              </ScrollView>
+            </View>
 
             {/* Input area */}
             <View style={styles.inputArea}>
@@ -946,30 +961,35 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
+    alignItems: 'flex-end',
+    paddingTop: 56,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  headerCenter: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingTop: 48,
-    paddingHorizontal: 24,
-    paddingBottom: 14,
+    alignItems: 'center',
+    gap: 10,
   },
-  headerText: {
-    flex: 1,
-    gap: 6,
+  logoWrap: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerTitle: {
+  logoHeart: {
+    position: 'absolute',
+  },
+  headerBrand: {
     fontSize: 18,
     fontWeight: '700',
     color: FreshFeminine.charcoal,
   },
-  headerSubtitle: {
-    fontSize: 10,
-    color: FreshFeminine.charcoalLight,
-  },
   closeBtn: {
     padding: 4,
-    marginLeft: 8,
-    marginTop: 2,
+  },
+  chatArea: {
+    flex: 1,
   },
   messageList: {
     flex: 1,
@@ -981,18 +1001,52 @@ const styles = StyleSheet.create({
   },
   messageListEmpty: {
     flexGrow: 1,
+    paddingTop: 4,
+    paddingBottom: 12,
   },
   emptyState: {
     flex: 1,
+    paddingHorizontal: 16,
+  },
+  emptyCard: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    paddingHorizontal: 24,
+    paddingVertical: 36,
+    marginTop: 12,
+    minHeight: 320,
+    ...Platform.select({
+      web: { boxShadow: '0 4px 24px rgba(0,0,0,0.10)' } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.10,
+        shadowRadius: 16,
+        elevation: 4,
+      },
+    }),
+  },
+  emptyStateHeading: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: FreshFeminine.charcoal,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    fontSize: 11,
+    color: FreshFeminine.charcoalLight,
+    marginTop: 10,
+    textAlign: 'center',
   },
   emptyStateText: {
     textAlign: 'center',
-    fontSize: 15,
-    lineHeight: 22,
-    color: FreshFeminine.charcoalLight,
+    fontSize: 14,
+    lineHeight: 21,
+    color: FreshFeminine.charcoal,
+    marginTop: 4,
   },
   bubbleRow: {
     maxWidth: '80%',

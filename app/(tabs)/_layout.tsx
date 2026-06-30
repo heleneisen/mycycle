@@ -79,14 +79,14 @@ export default function TabLayout() {
         <View style={[styles.floatingContainer, { bottom: BUTTON_BOTTOM }]} pointerEvents="box-none">
           <Pressable onPress={() => setChatVisible(true)} style={styles.pillPressable}>
             <LinearGradient
-              colors={['#E2F7F7', '#EDE6FA']}
+              colors={['#FDEBD8', '#FAD6E6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.pill}
             >
               <View style={styles.sparkleCluster}>
-                <MaterialIcons name="auto-awesome" size={15} color={FreshFeminine.fluid5} />
-                <MaterialIcons name="auto-awesome" size={10} color="#B08DD4" style={styles.sparklePurple} />
+                <MaterialIcons name="auto-awesome" size={15} color={FreshFeminine.flowMedium} />
+                <MaterialIcons name="auto-awesome" size={10} color={FreshFeminine.flowLight} style={styles.sparklePurple} />
               </View>
               <Text style={styles.pillLabel}>Ask FemCycle</Text>
             </LinearGradient>
